@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema Académico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    .sidebar {
+      min-height: 100vh;
+      background-color: #212529;
+    }
+    .nav-link {
+      color: rgba(255,255,255,.7);
+      cursor: pointer;
+    }
+    .nav-link.active, .nav-link:hover {
+      background-color: #0d6efd;
+      color: #fff;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+<!-- ================= LOGIN ================= -->
+<div id="vistaLogin" class="container vh-100 d-flex justify-content-center align-items-center">
+  <div class="card p-4 shadow" style="width:400px">
+    <h3 class="text-center mb-3">Ingreso Docente</h3>
+    <form id="formLogin">
+      <input id="loginCedula" class="form-control mb-2" placeholder="Cédula" required>
+      <input id="loginClave" type="password" class="form-control mb-3" placeholder="Contraseña" required>
+      <button class="btn btn-primary w-100">Ingresar</button>
+      <div id="loginError" class="text-danger text-center mt-2"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="vistaDashboard" class="container-fluid d-none">
+  <div class="row">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="col-md-2 sidebar text-white p-3">
+      <h4 class="text-center">Sistema</h4>
+      <hr>
+
+      <ul class="nav flex-column">
+        <li class="nav-item mb-2">
+          <a class="nav-link active" id="btnPerfil">
+            <i class="bi bi-person-circle"></i> Mi perfil
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link" id="btnEstudiantes">
+            <i class="bi bi-people-fill"></i> Estudiantes
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link" id="btnMaterias">
+            <i class="bi bi-book-fill"></i> Materias
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link" id="btnNotas">
+            <i class="bi bi-pencil-square"></i> Notas
+          </a>
+        </li>
+      </ul>
+
+      <hr>
+      <button id="btnSalir" class="btn btn-outline-danger w-100">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      </button>
+    </div>
+
+    <!-- ===== CONTENIDO ===== -->
+    <div class="col-md-10 p-4">
+
+      <!-- ===== MI PERFIL ===== -->
+      <div id="vistaPerfil">
+        <h4>Mi perfil</h4>
+        <div class="card shadow-sm w-50">
+          <div class="card-body">
+            <p><strong>Nombre:</strong> <span id="perfilNombre"></span></p>
+            <p><strong>Cédula:</strong> <span id="perfilCedula"></span></p>
+            <p><strong>Rol:</strong> Docente</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ESTUDIANTES ===== -->
+      <div id="vistaEstudiantes" class="d-none">
+        <h4>Estudiantes</h4>
+        <table class="table table-striped text-center mt-3">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+            </tr>
+          </thead>
+          <tbody id="tablaEstudiantes"></tbody>
+        </table>
+      </div>
+
+      <!-- ===== MATERIAS ===== -->
+      <div id="vistaMaterias" class="d-none">
+        <h4>Materias</h4>
+        <table class="table table-striped text-center mt-3">
+          <thead class="table-dark">
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+            </tr>
+          </thead>
+          <tbody id="tablaMaterias"></tbody>
+        </table>
+      </div>
+
+      <!-- ===== NOTAS ===== -->
+      <div id="vistaNotas" class="d-none">
+        <h4>Agregar nota</h4>
+
+        <div class="row mt-3">
+          <div class="col-md-4">
+            <input id="notaEstudiante" class="form-control mb-2" placeholder="ID Estudiante">
+          </div>
+          <div class="col-md-4">
+            <input id="notaMateria" class="form-control mb-2" placeholder="Código Materia">
+          </div>
+          <div class="col-md-4">
+            <input id="notaValor" class="form-control mb-2" placeholder="Nota">
+          </div>
+        </div>
+
+        <button id="btnGuardarNota" class="btn btn-primary mt-2">
+          Guardar nota
+        </button>
+
+        <div id="resultadoNota" class="mt-2"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
