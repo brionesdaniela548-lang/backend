@@ -1,188 +1,153 @@
-//const API_URL = "http://localhost:3000";
-const API_URL=import.meta.env.VITE_API_URL;
-console.log("API_URL FRONT=", API_URL);
 
-
-// ================= ESTADO =================
+const API_URL = import.meta.env.VITE_API_URL;
 let usuarioLogueado = null;
 
-// ================= VISTAS =================
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Opcional para componentes interactivos
+
+// VISTAS
 const vistaLogin = document.getElementById("vistaLogin");
 const vistaDashboard = document.getElementById("vistaDashboard");
-
 const vistaPerfil = document.getElementById("vistaPerfil");
 const vistaEstudiantes = document.getElementById("vistaEstudiantes");
 const vistaMaterias = document.getElementById("vistaMaterias");
 const vistaNotas = document.getElementById("vistaNotas");
 
-// ================= BOTONES =================
+// BOTONES
 const btnPerfil = document.getElementById("btnPerfil");
 const btnEstudiantes = document.getElementById("btnEstudiantes");
 const btnMaterias = document.getElementById("btnMaterias");
 const btnNotas = document.getElementById("btnNotas");
-const btnSalir = document.getElementById("btnSalir");
 
-// ================= LOGIN =================
-document.getElementById("formLogin").addEventListener("submit", async (e) => {
+// LOGIN
+document.getElementById("formLogin").addEventListener("submit", async e => {
   e.preventDefault();
 
-  const cedula = document.getElementById("loginCedula").value;
-  const clave = document.getElementById("loginClave").value;
+  const cedula = loginCedula.value.trim();
+  const clave = loginClave.value.trim();
 
-  const res = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cedula, clave })
-  });
+  try {
+    console.log("API_URL:", API_URL);
+    const res = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula, clave })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
+    if (!res.ok) {
+      loginError.textContent = data.msg || "Error en el login";
+      return;
+    }
 
-  if (res.ok) {
-    iniciarSesion(data.usuario);
-  } else {
-    document.getElementById("loginError").textContent = data.msg;
+    usuarioLogueado = data.usuario;
+    vistaLogin.classList.add("d-none");
+    vistaDashboard.classList.remove("d-none");
+
+    perfilNombre.textContent = usuarioLogueado.nombre;
+    perfilCedula.textContent = usuarioLogueado.cedula;
+    perfilRol.textContent = usuarioLogueado.rol;
+
+    if (usuarioLogueado.rol === "estudiante") {
+      btnEstudiantes.classList.add("d-none");
+      btnMaterias.classList.add("d-none");
+      btnNotas.click();
+      cargarMisNotas();
+      document.getElementById("formNotasDocente").classList.add("d-none");
+    } else {
+      cargarEstudiantes();
+      cargarMaterias();
+    }
+  } catch (error) {
+    console.error("Error en login:", error);
+    loginError.textContent = "No se pudo conectar con el servidor.";
   }
 });
 
-function iniciarSesion(usuario) {
-  usuarioLogueado = usuario;
+// NAVEGACIÓN
+btnPerfil.onclick = () => mostrar("perfil");
+btnEstudiantes.onclick = () => mostrar("estudiantes");
+btnMaterias.onclick = () => mostrar("materias");
+btnNotas.onclick = () => mostrar("notas");
 
-  vistaLogin.classList.add("d-none");
-  vistaDashboard.classList.remove("d-none");
+function mostrar(v) {
+  [vistaPerfil, vistaEstudiantes, vistaMaterias, vistaNotas]
+    .forEach(x => x.classList.add("d-none"));
 
-  mostrarVista("perfil");
-
-  cargarEstudiantes();
-  cargarMaterias();
+  if (v === "perfil") vistaPerfil.classList.remove("d-none");
+  if (v === "estudiantes") vistaEstudiantes.classList.remove("d-none");
+  if (v === "materias") vistaMaterias.classList.remove("d-none");
+  if (v === "notas") vistaNotas.classList.remove("d-none");
 }
 
-// ================= NAVEGACIÓN =================
-btnPerfil.addEventListener("click", () => mostrarVista("perfil"));
-btnEstudiantes.addEventListener("click", () => mostrarVista("estudiantes"));
-btnMaterias.addEventListener("click", () => mostrarVista("materias"));
-btnNotas.addEventListener("click", () => mostrarVista("notas"));
-
-btnSalir.addEventListener("click", () => {
-  location.reload();
-});
-
-function mostrarVista(vista) {
-  // Ocultar todas
-  vistaPerfil.classList.add("d-none");
-  vistaEstudiantes.classList.add("d-none");
-  vistaMaterias.classList.add("d-none");
-  vistaNotas.classList.add("d-none");
-
-  // Quitar active
-  document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-
-  // Mostrar la seleccionada
-  switch (vista) {
-    case "perfil":
-      vistaPerfil.classList.remove("d-none");
-      btnPerfil.classList.add("active");
-      cargarPerfil();
-      break;
-
-    case "estudiantes":
-      vistaEstudiantes.classList.remove("d-none");
-      btnEstudiantes.classList.add("active");
-      break;
-
-    case "materias":
-      vistaMaterias.classList.remove("d-none");
-      btnMaterias.classList.add("active");
-      break;
-
-    case "notas":
-      vistaNotas.classList.remove("d-none");
-      btnNotas.classList.add("active");
-      break;
-  }
-}
-
-// ================= PERFIL =================
-function cargarPerfil() {
-  document.getElementById("perfilNombre").textContent = usuarioLogueado.nombre;
-  document.getElementById("perfilCedula").textContent = usuarioLogueado.cedula;
-}
-
-// ================= ESTUDIANTES =================
+// CARGAS
 async function cargarEstudiantes() {
-  const res = await fetch(`${API_URL}/estudiantes`);
-  const estudiantes = await res.json();
-
-  const tabla = document.getElementById("tablaEstudiantes");
-  tabla.innerHTML = "";
-
-  estudiantes.forEach(e => {
-    tabla.innerHTML += `
-      <tr>
-        <td>${e.id}</td>
-        <td>${e.nombre}</td>
-      </tr>
-    `;
-  });
+  try {
+    console.log("Llamando a /estudiantes");
+    const res = await fetch(`${API_URL}/estudiantes`);
+    const data = await res.json();
+    tablaEstudiantes.innerHTML = data.length
+      ? data.map(e => `<tr><td>${e.id}</td><td>${e.nombre}</td></tr>`).join("")
+      : "<tr><td colspan='2'>No hay estudiantes</td></tr>";
+  } catch (error) {
+    console.error("Error cargando estudiantes:", error);
+    tablaEstudiantes.innerHTML = "<tr><td colspan='2'>Error al cargar</td></tr>";
+  }
 }
 
-// ================= MATERIAS =================
 async function cargarMaterias() {
-  const res = await fetch(`${API_URL}/materia`);
-  const materias = await res.json();
-
-  const tabla = document.getElementById("tablaMaterias");
-  tabla.innerHTML = "";
-
-  materias.forEach(m => {
-    tabla.innerHTML += `
-      <tr>
-        <td>${m.codigo}</td>
-        <td>${m.nombre}</td>
-      </tr>
-    `;
-  });
+  try {
+    console.log("Llamando a /materia");
+    const res = await fetch(`${API_URL}/materia`);
+    const data = await res.json();
+    tablaMaterias.innerHTML = data.length
+      ? data.map(m => `<tr><td>${m.codigo}</td><td>${m.nombre}</td></tr>`).join("")
+      : "<tr><td colspan='2'>No hay materias</td></tr>";
+  } catch (error) {
+    console.error("Error cargando materias:", error);
+    tablaMaterias.innerHTML = "<tr><td colspan='2'>Error al cargar</td></tr>";
+  }
 }
 
-// --- GUARDAR NOTA ---
-document.getElementById("btnGuardarNota").addEventListener("click", async () => {
-  const estudiante_id = document.getElementById("notaEstudiante").value;
-  const materia_id = document.getElementById("notaMateria").value;
-  const nota = document.getElementById("notaValor").value;
-
-  if (!estudiante_id || !materia_id || !nota) {
-    document.getElementById("resultadoNota").innerHTML =
-      "<div class='text-danger'>Completa todos los campos</div>";
-    return;
+async function cargarMisNotas() {
+  try {
+    console.log("Llamando a /mis-notas");
+    const res = await fetch(`${API_URL}/mis-notas/${usuarioLogueado.id}`);
+    const data = await res.json();
+    tablaNotasEstudiante.innerHTML = data.length
+      ? data.map(n => `<tr><td>${n.materia}</td><td>${n.nota}</td></tr>`).join("")
+      : "<tr><td colspan='2'>No hay notas</td></tr>";
+  } catch (error) {
+    console.error("Error cargando notas:", error);
+    tablaNotasEstudiante.innerHTML = "<tr><td colspan='2'>Error al cargar</td></tr>";
   }
+}
 
-  const res = await fetch(`${API_URL}/notas`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      estudiante_id,
-      materia_id,
-      usuario_id: usuarioLogueado.id, // docente logueado
-      nota
-    })
-  });
+// GUARDAR NOTA (DOCENTE)
+btnGuardarNota.onclick = async () => {
+  if (usuarioLogueado.rol !== "docente") return;
 
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/notas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        estudiante_id: notaEstudiante.value,
+        materia_id: notaMateria.value,
+        usuario_id: usuarioLogueado.id,
+        nota: notaValor.value
+      })
+    });
 
-  if (res.ok) {
-    document.getElementById("resultadoNota").innerHTML =
-      `<div class="alert alert-success">
-        ✅ Nota guardada correctamente<br>
-        Estudiante ID: ${data.estudiante_id}<br>
-        Materia ID: ${data.materia_id}<br>
-        Nota: ${data.nota}
-      </div>`;
-
-    // limpiar inputs
-    document.getElementById("notaEstudiante").value = "";
-    document.getElementById("notaMateria").value = "";
-    document.getElementById("notaValor").value = "";
-  } else {
-    document.getElementById("resultadoNota").innerHTML =
-      `<div class="alert alert-danger">${data.msg || "Error al guardar nota"}</div>`;
+    if (res.ok) {
+      alert("Nota guardada correctamente");
+      cargarEstudiantes();
+      cargarMaterias();
+    } else {
+      alert("Error al guardar la nota");
+    }
+  } catch (error) {
+    console.error("Error guardando nota:", error);
+    alert("No se pudo conectar con el servidor");
   }
-});
+};
