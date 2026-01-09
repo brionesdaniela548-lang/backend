@@ -1,0 +1,21 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/brionesdaniela548/backend#readme",
+  "bugs": {
+    "url": "https://github.com/brionesdaniela548/backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brionesdaniela548/backend.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "db.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  }
+}
